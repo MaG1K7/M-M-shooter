@@ -1,13 +1,8 @@
 import cv2
-import os
-import matplotlib.pyplot as plt
-import random
-
+import numpy as np
 import tensorflow as tf
-from keras import backend as K
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Conv2DTranspose, Input, concatenate
 from tensorflow.keras.models import Model
-
 
 
 def encoder_block(filters, inputs):
@@ -56,4 +51,6 @@ def unet():
   model = Model(inputs = inputs, outputs = outputs, name = 'Unet')
 
   return model
+
+
 
