@@ -94,6 +94,7 @@ def augmentData(dataset: list, masks: list, brightness: float = 0.5,
   data_brightened = []
   data_hsv = []
   data_noisy = []
+
   for image,mask in zip(dataset,masks):
     data_flip_hor.append(cv2.flip(image, 1))
     masks_flip_hor.append(cv2.flip(mask, 1))
@@ -122,106 +123,45 @@ def augmentData(dataset: list, masks: list, brightness: float = 0.5,
     data_noise = cv2.add(image, noise)
     data_noisy.append(data_noise)
 
-  dataset_augmented = dataset + data_flip_hor + data_flip_ver + data_90_r + data_90_l + data_brightened + data_hsv + data_noisy
-  masks_augmented = masks + masks_flip_hor + masks_flip_ver + masks_90_r + masks_90_l + masks*3
+  dataset_augmented = dataset + data_flip_ver + data_90_r + data_90_l + data_brightened + data_hsv + data_noisy
+  masks_augmented = masks + masks_flip_ver + masks_90_r + masks_90_l + masks*3
 
   data_flip_hor.clear()
   data_flip_ver.clear()
   data_90_r.clear()
   data_90_l.clear()
-  masks_flip_hor.clear()
-  masks_flip_ver.clear()
-  masks_90_r.clear()
-  masks_90_l.clear()
-  for image, mask in zip(data_hsv, masks):
+
+
+  for image in data_hsv:
     data_flip_hor.append(cv2.flip(image, 1))
-    masks_flip_hor.append(cv2.flip(mask, 1))
+
     data_flip_ver.append(cv2.flip(image, 0))
-    masks_flip_ver.append(cv2.flip(mask, 0))
+
     data_90_r.append(cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE))
-    masks_90_r.append(cv2.rotate(mask, cv2.ROTATE_90_CLOCKWISE))
+
     data_90_l.append(cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE))
-    masks_90_l.append(cv2.rotate(mask, cv2.ROTATE_90_COUNTERCLOCKWISE))
-  # for image in data_hsv:
-  #   data_flip_hor.append(cv2.flip(image, 1))
-  #
-  #   data_flip_ver.append(cv2.flip(image, 0))
-  #
-  #   data_90_r.append(cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE))
-  #
-  #   data_90_l.append(cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE))
 
-  dataset_augmented += data_flip_hor + data_flip_ver + data_90_r + data_90_l
-  masks_augmented += masks_flip_hor + masks_flip_ver  + masks_90_r + masks_90_l
 
-  data_flip_hor.clear()
-  data_flip_ver.clear()
-  data_90_r.clear()
-  data_90_l.clear()
-  masks_flip_hor.clear()
-  masks_flip_ver.clear()
-  masks_90_r.clear()
-  masks_90_l.clear()
-
-  for image, mask in zip(data_noisy, masks):
+  for image in data_noisy:
     data_flip_hor.append(cv2.flip(image, 1))
-    masks_flip_hor.append(cv2.flip(mask, 1))
+
     data_flip_ver.append(cv2.flip(image, 0))
-    masks_flip_ver.append(cv2.flip(mask, 0))
+
     data_90_r.append(cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE))
-    masks_90_r.append(cv2.rotate(mask, cv2.ROTATE_90_CLOCKWISE))
+
     data_90_l.append(cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE))
-    masks_90_l.append(cv2.rotate(mask, cv2.ROTATE_90_COUNTERCLOCKWISE))
 
-  # for image in data_noisy:
-  #   data_flip_hor.append(cv2.flip(image, 1))
-  #
-  #   data_flip_ver.append(cv2.flip(image, 0))
-  #
-  #   data_90_r.append(cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE))
-  #
-  #   data_90_l.append(cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE))
-
-  dataset_augmented += data_flip_hor + data_flip_ver + data_90_r + data_90_l
-  masks_augmented += masks_flip_hor + masks_flip_ver  + masks_90_r + masks_90_l
-  data_flip_hor.clear()
-  data_flip_ver.clear()
-  data_90_r.clear()
-  data_90_l.clear()
-  masks_flip_hor.clear()
-  masks_flip_ver.clear()
-  masks_90_r.clear()
-  masks_90_l.clear()
-
-  for image, mask in zip(data_brightened, masks):
+  for image in data_brightened:
     data_flip_hor.append(cv2.flip(image, 1))
-    masks_flip_hor.append(cv2.flip(mask, 1))
+
     data_flip_ver.append(cv2.flip(image, 0))
-    masks_flip_ver.append(cv2.flip(mask, 0))
+
     data_90_r.append(cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE))
-    masks_90_r.append(cv2.rotate(mask, cv2.ROTATE_90_CLOCKWISE))
+
     data_90_l.append(cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE))
-    masks_90_l.append(cv2.rotate(mask, cv2.ROTATE_90_COUNTERCLOCKWISE))
 
-  # for image in data_brightened:
-  #   data_flip_hor.append(cv2.flip(image, 1))
-  #
-  #   data_flip_ver.append(cv2.flip(image, 0))
-  #
-  #   data_90_r.append(cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE))
-  #
-  #   data_90_l.append(cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE))
-
-  dataset_augmented += data_flip_hor + data_flip_ver + data_90_r + data_90_l
-  masks_augmented += masks_flip_hor + masks_flip_ver  + masks_90_r + masks_90_l
-  # data_flip_hor.clear()
-  # data_flip_ver.clear()
-  # data_90_r.clear()
-  # data_90_l.clear()
-  # masks_flip_hor.clear()
-  # masks_flip_ver.clear()
-  # masks_90_r.clear()
-  # masks_90_l.clear()
+  dataset_augmented +=  data_flip_ver + data_90_r + data_90_l
+  masks_augmented += 3*masks_flip_ver  + 3*masks_90_r + 3*masks_90_l
 
   return dataset_augmented, masks_augmented
 
