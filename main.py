@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from helper import *
 import pandas as pd
+import serial
 import time
 from matplotlib import pyplot as plt
 
@@ -18,17 +19,30 @@ def getCenterMask(image_name):
 #
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
+arduino = serial.Serial(port='COM9', baudrate=9600, timeout=.1)
+
+def send_command(pos_x, pos_y):
+    command = f"{pos_x},{pos_y}\n"
+    arduino.write(command.encode())
+    time.sleep(0.05)  # Give Arduino time to react
+
 # Start webcam
 cap = cv2.VideoCapture(0)
+
 face_img = None
 prediction = np.zeros([128,128])
 origin_shape = [250,250]
 face_x,face_y = 0,0
 mouth_x, mouth_y = 0,0
+width = 640
+height = 480
 margin=0.4
+mouth_found = False
 while True:
     ret, frame = cap.read()
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
     # Detect faces
     faces = face_cascade.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=20)
     # Show the main webcam feed
@@ -55,29 +69,43 @@ while True:
     else:
         faceDetected = False
         face_img = np.zeros([128,128,1])
-        # face_img = frame
-        # face_img = cv2.resize(face_img, (128, 128))
+
     if faceDetected:
-        # predict
+
         input = np.expand_dims(face_img, axis=0)  # add batch dimension
-        prediction = modelLoading("unet_model.keras").predict(input)
+
+        # predict the mouth position using the model
+        prediction = modelLoading("unet_model_2.keras").predict(input)
         prediction = np.squeeze(prediction)
         prediction = (prediction > 0.5).astype(np.uint8)
+        # show face with mouth mask21
+
         prediction = prediction * 255
         face_with_prediction = np.maximum(face_img, prediction)
+        cv2.imshow('Cropped Face', face_with_prediction)
+        # calculate the middle of the mouth
         prediction = cv2.resize(prediction, origin_shape)
         mouth_x,mouth_y = face_x+getCenterMask(prediction)[0], face_y+getCenterMask(prediction)[1]
-        prediction = prediction*255
-        # face_with_prediction = np.maximum(face_img,prediction)
-        # show predict
-        cv2.imshow('Cropped Face', face_with_prediction)
+        if getCenterMask(prediction)[0]>0 and getCenterMask(prediction)[1]>0:
+            mouth_found = True
+        else:
+            mouth_found = False
+        # calculate the distance between the middle lines and middle of the mouth
+        distance_x = width/2 - mouth_x
+        distance_y = height/2 - mouth_y
+        # show middle of the mouth
         plt.figure(figsize=(6, 6))
         plt.imshow(frame)
         plt.plot(mouth_x, mouth_y, 'ro')  # red dot at the centroid
         plt.text(mouth_x + 5, mouth_y, f'({mouth_x},{mouth_y})', color='red')
         plt.axis('off')
         plt.show()
+        if mouth_found:
+            # send the distance to arduino
+            send_command(distance_x,distance_y)
+
     if cv2.waitKey(1) & 0xFF == ord('q'):
+        send_command(360,360)
         break
 
 
