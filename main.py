@@ -7,24 +7,13 @@ import time
 from matplotlib import pyplot as plt
 
 
-def getCenterMask(image_name):
-    M = cv2.moments(image_name)
-    if M["m00"] != 0:
-        cX = int(M["m10"] / M["m00"])
-        cY = int(M["m01"] / M["m00"])
-        return cX, cY
-    else:
-        return 0,0
 
-#
+
+
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 arduino = serial.Serial(port='COM9', baudrate=9600, timeout=.1)
 
-def send_command(pos_x, pos_y):
-    command = f"{pos_x},{pos_y}\n"
-    arduino.write(command.encode())
-    time.sleep(0.05)  # Give Arduino time to react
 
 # Start webcam
 cap = cv2.VideoCapture(0)
@@ -71,15 +60,12 @@ while True:
         face_img = np.zeros([128,128,1])
 
     if faceDetected:
-
         input = np.expand_dims(face_img, axis=0)  # add batch dimension
-
         # predict the mouth position using the model
         prediction = modelLoading("unet_model_2.keras").predict(input)
         prediction = np.squeeze(prediction)
         prediction = (prediction > 0.5).astype(np.uint8)
-        # show face with mouth mask21
-
+        # show face with mouth mask
         prediction = prediction * 255
         face_with_prediction = np.maximum(face_img, prediction)
         cv2.imshow('Cropped Face', face_with_prediction)
@@ -102,46 +88,10 @@ while True:
         plt.show()
         if mouth_found:
             # send the distance to arduino
-            send_command(distance_x,distance_y)
+            send_command(arduino,distance_x,distance_y)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
-        send_command(360,360)
+        send_command(arduino,360,360)
         break
 
 
-# test_image = cv2.imread("testing/test_002.jpg", cv2.IMREAD_GRAYSCALE)
-#
-# # Detect faces
-# faces = face_cascade.detectMultiScale(test_image, scaleFactor=1.1, minNeighbors=20)
-# face_img = None
-# if len(faces) > 0:
-#     (x, y, w, h) = faces[0]
-#     # Draw rectangle (optional)
-#     cv2.rectangle(test_image, (x, y), (x+w+100, y+h+100), (255, 0, 0), 2)
-#
-#     # Crop the face from the original frame
-#     face_img = test_image[y-50:y+h+50, x-50:x+w+50]
-#     face_img = cv2.resize(face_img, (128, 128))
-# else:
-#     face_img = test_image
-# cv2.imshow("test_image", face_img)
-# cv2.waitKey(0)
-#
-# face_img = cv2.resize(face_img, (128, 128))
-# # image = cv2.imread("testing/test_001.jpg", cv2.IMREAD_GRAYSCALE)
-# # image =cv2.resize(image, (128, 128))
-# face_img = np.expand_dims(face_img, axis=0)  # add batch dimension
-# prediction = modelLoading("unet_model.keras").predict(face_img)
-# prediction = np.squeeze(prediction)
-# prediction = (prediction > 0.5).astype(np.uint8)
-# plt.subplot(1,2,1)
-# plt.imshow(np.squeeze(face_img), cmap='gray')
-# plt.subplot(1,2,2)
-# plt.imshow(prediction)
-# plt.show()
-# prediction = prediction
-# cv2.imwrite("testing/prediction_002.jpg", prediction)
-# cv2.imshow("prediction", prediction)
-# cv2.waitKey(0)
-#
-# getCenterMask(prediction)
